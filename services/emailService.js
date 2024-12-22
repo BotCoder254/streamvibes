@@ -1,41 +1,93 @@
 const nodemailer = require('nodemailer');
-const ejs = require('ejs');
-const path = require('path');
 
 // Create transporter
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: process.env.SMTP_PORT || 587,
     secure: false,
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+        user: process.env.SMTP_USER || 'teumteum776@gmail.com',
+        pass: process.env.SMTP_PASS || 'lxnqofjkeeivvjqq'
     }
 });
 
-// Send email function
-async function sendEmail({ to, subject, template, context }) {
+// Send verification email
+const sendVerificationEmail = async (user, token) => {
     try {
-        // Render email template
-        const templatePath = path.join(__dirname, '..', 'views', 'emails', `${template}.ejs`);
-        const html = await ejs.renderFile(templatePath, {
-            ...context,
-            baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`
-        });
+        const verificationUrl = `http://localhost:3000/users/verify/${token}`;
+        
+        const mailOptions = {
+            from: '"StreamVista" <teumteum776@gmail.com>',
+            to: user.email,
+            subject: 'Verify Your StreamVista Account',
+            html: `
+                <h1>Welcome to StreamVista!</h1>
+                <p>Hello ${user.username},</p>
+                <p>Thank you for registering. Please verify your email by clicking the link below:</p>
+                <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
+                <p>If you did not create this account, please ignore this email.</p>
+                <p>This link will expire in 24 hours.</p>
+            `
+        };
 
-        // Send email
-        await transporter.sendMail({
-            from: process.env.SMTP_USER,
-            to,
-            subject,
-            html
-        });
-
-        console.log('Email sent successfully');
+        await transporter.sendMail(mailOptions);
+        return true;
     } catch (error) {
-        console.error('Email sending error:', error);
-        throw error;
+        console.error('Error sending verification email:', error);
+        return false;
     }
-}
+};
 
-module.exports = { sendEmail }; 
+// Send password reset email
+const sendPasswordResetEmail = async (user, resetUrl) => {
+    try {
+        const mailOptions = {
+            from: '"StreamVista" <teumteum776@gmail.com>',
+            to: user.email,
+            subject: 'Password Reset Request',
+            html: `
+                <h1>Password Reset</h1>
+                <p>Hello ${user.username},</p>
+                <p>You requested to reset your password. Click the link below to reset it:</p>
+                <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+                <p>If you did not request this reset, please ignore this email.</p>
+                <p>This link will expire in 1 hour.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        return false;
+    }
+};
+
+// Send password changed confirmation email
+const sendPasswordChangedEmail = async (user) => {
+    try {
+        const mailOptions = {
+            from: '"StreamVista" <teumteum776@gmail.com>',
+            to: user.email,
+            subject: 'Password Changed Successfully',
+            html: `
+                <h1>Password Changed</h1>
+                <p>Hello ${user.username},</p>
+                <p>Your password has been successfully changed.</p>
+                <p>If you did not make this change, please contact support immediately.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending password changed email:', error);
+        return false;
+    }
+};
+
+module.exports = {
+    sendVerificationEmail,
+    sendPasswordResetEmail,
+    sendPasswordChangedEmail
+}; 

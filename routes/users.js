@@ -4,7 +4,7 @@ const passport = require('passport');
 const User = require('../models/User');
 const Video = require('../models/Video');
 const { ensureAuthenticated } = require('../config/auth');
-const { sendEmail } = require('../services/emailService');
+const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangedEmail } = require('../services/emailService');
 const path = require('path');
 const fs = require('fs').promises;
 const crypto = require('crypto');
@@ -225,13 +225,15 @@ router.post('/register', async (req, res) => {
         });
 
         // Generate verification token
-        const verificationToken = user.generateVerificationToken();
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        user.verificationToken = verificationToken;
+        user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
         // Save user
         await user.save();
 
         // Send verification email
-        const emailSent = await emailService.sendVerificationEmail(user, verificationToken);
+        const emailSent = await sendVerificationEmail(user, verificationToken);
         
         if (!emailSent) {
             req.flash('warning_msg', 'Account created but verification email could not be sent. Please contact support.');
@@ -336,16 +338,12 @@ router.post('/forgot-password', async (req, res) => {
 
         // Send reset email
         const resetUrl = `${req.protocol}://${req.get('host')}/users/reset-password/${resetToken}`;
-        
-        await sendEmail({
-            to: user.email,
-            subject: 'Password Reset Request',
-            template: 'reset-password',
-            context: {
-                resetUrl,
-                username: user.username
-            }
-        });
+        const emailSent = await sendPasswordResetEmail(user, resetUrl);
+
+        if (!emailSent) {
+            req.flash('error_msg', 'Error sending password reset email. Please try again.');
+            return res.redirect('/users/forgot-password');
+        }
 
         req.flash('success_msg', 'Password reset link has been sent to your email.');
         res.redirect('/users/login');
@@ -417,16 +415,14 @@ router.post('/reset-password/:token', async (req, res) => {
         await user.save();
 
         // Send confirmation email
-        await sendEmail({
-            to: user.email,
-            subject: 'Your password has been changed',
-            template: 'password-changed',
-            context: {
-                username: user.username
-            }
-        });
+        const emailSent = await sendPasswordChangedEmail(user);
 
-        req.flash('success_msg', 'Your password has been updated. Please log in.');
+        if (!emailSent) {
+            req.flash('warning_msg', 'Password updated but confirmation email could not be sent.');
+        } else {
+            req.flash('success_msg', 'Your password has been updated. Please log in.');
+        }
+
         res.redirect('/users/login');
     } catch (error) {
         console.error('Reset password error:', error);

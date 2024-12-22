@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -16,16 +17,40 @@ process.removeAllListeners('warning');
 // Passport config
 require('./config/passport')(passport);
 
-// DB Config
-mongoose.connect('mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/streamvista?retryWrites=true&w=majority', {
+// MongoDB Connection URI
+const uri = "mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/?retryWrites=true&w=majority&appName=stream";
+
+// Create a MongoClient with a MongoClientOptions object
+const client = new MongoClient(uri, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+});
+
+// DB Config with Mongoose
+mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    family: 4
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true
+    }
 })
-.then(() => console.log('MongoDB Connected...'))
-.catch(err => console.log(err));
+.then(async () => {
+    try {
+        // Connect the client to the server
+        await client.connect();
+        // Send a ping to confirm a successful connection
+        await client.db("admin").command({ ping: 1 });
+        console.log("MongoDB Connected Successfully!");
+    } catch (err) {
+        console.error("Error connecting to MongoDB:", err);
+    }
+})
+.catch(err => console.error('MongoDB connection error:', err));
 
 // EJS
 app.use(expressLayouts);
@@ -124,6 +149,18 @@ process.on('warning', (warning) => {
             // Suppress this specific warning
             return;
         }
+    }
+});
+
+// Cleanup on app termination
+process.on('SIGINT', async () => {
+    try {
+        await client.close();
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+    } catch (err) {
+        console.error('Error during cleanup:', err);
+        process.exit(1);
     }
 });
 
