@@ -9,7 +9,7 @@ services:
       - PORT=3000
       - NODE_ENV=production
       - BASE_URL=http://localhost:3000
-      - MONGODB_URI=mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/?retryWrites=true&w=majority&appName=stream
+      - MONGODB_URI=mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/streamvista?retryWrites=true&w=majority
       - SESSION_SECRET=KquWbFL6DYB7sw4FxuVXAyZnwbfArT0YpoxF1yNGKZg
       - JWT_SECRET=iYYO8jSXNZauzM7tNKcyQMZhJhwIG-_XcFDwf5OIfgk
       - UPLOAD_DIR=uploads
@@ -17,7 +17,7 @@ services:
       - SMTP_HOST=smtp.gmail.com
       - SMTP_PORT=587
       - SMTP_USER=teumteum776@gmail.com
-      - SMTP_PASS=lxnq ofjk eeiv vjqq
+      - SMTP_PASS=lxnqofjkeeivvjqq
       - MAX_VIDEO_SIZE=20000000
       - MAX_THUMBNAIL_SIZE=20000000
       - ALLOWED_VIDEO_TYPES=video/mp4,video/webm
@@ -33,4 +33,10 @@ services:
       timeout: 30s
       retries: 3
       start_period: 5s
-    restart: unless-stopped 
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

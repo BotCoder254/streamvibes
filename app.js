@@ -17,9 +17,12 @@ process.removeAllListeners('warning');
 require('./config/passport')(passport);
 
 // DB Config
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/streamvista', {
+mongoose.connect('mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/streamvista?retryWrites=true&w=majority', {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4
 })
 .then(() => console.log('MongoDB Connected...'))
 .catch(err => console.log(err));
