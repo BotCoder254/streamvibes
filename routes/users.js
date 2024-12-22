@@ -8,7 +8,7 @@ const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangedEmail 
 const path = require('path');
 const fs = require('fs').promises;
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const multer = require('multer');
 
 // Configure multer for avatar uploads

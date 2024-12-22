@@ -1,51 +1,53 @@
 # Use Node.js LTS version
-FROM node:18-slim
+FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for video processing and curl for healthcheck
+# Install system dependencies including ffmpeg and other required packages
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
+    python3 \
+    make \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
-ENV PORT=3000 \
-    NODE_ENV=production \
+ENV NODE_ENV=production \
+    PORT=3000 \
     BASE_URL=http://localhost:3000 \
     MONGODB_URI="mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/?retryWrites=true&w=majority&appName=stream" \
     SESSION_SECRET=KquWbFL6DYB7sw4FxuVXAyZnwbfArT0YpoxF1yNGKZg \
     JWT_SECRET=iYYO8jSXNZauzM7tNKcyQMZhJhwIG-_XcFDwf5OIfgk \
-    UPLOAD_DIR=uploads \
-    MAX_FILE_SIZE=20000000 \
     SMTP_HOST=smtp.gmail.com \
     SMTP_PORT=587 \
     SMTP_USER=teumteum776@gmail.com \
-    SMTP_PASS=lxnqofjkeeivvjqq \
-    MAX_VIDEO_SIZE=20000000 \
-    MAX_THUMBNAIL_SIZE=20000000 \
-    ALLOWED_VIDEO_TYPES=video/mp4,video/webm \
-    ALLOWED_IMAGE_TYPES=image/jpeg,image/png,image/gif \
-    UPLOAD_PATH=/app/public/uploads \
-    TEMP_PATH=/app/uploads/temp
+    SMTP_PASS=lxnqofjkeeivvjqq
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/public/uploads/videos \
+    /app/public/uploads/thumbnails \
+    /app/public/uploads/avatars \
+    /app/uploads/temp \
+    && chmod -R 755 /app/public/uploads \
+    && chmod -R 755 /app/uploads
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
 # Copy project files
 COPY . .
 
-# Create upload directories
-RUN mkdir -p public/uploads/videos \
-    public/uploads/thumbnails \
-    public/uploads/avatars \
-    uploads/temp \
-    && chmod -R 755 public/uploads \
-    && chmod -R 755 uploads
+# Set proper permissions for uploaded files
+RUN chown -R node:node /app/public/uploads \
+    && chown -R node:node /app/uploads
+
+# Switch to non-root user
+USER node
 
 # Expose port
 EXPOSE $PORT

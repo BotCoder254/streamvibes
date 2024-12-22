@@ -1,13 +1,17 @@
 # Dependencies
 node_modules
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # Environment variables
 .env
 .env.local
 .env.*.local
+.env.development
+.env.test
+.env.production
 
 # Uploads and temp files
 public/uploads/*
@@ -16,12 +20,19 @@ uploads/temp/*
 # Git and version control
 .git
 .gitignore
+.gitattributes
+.github
 
 # IDE and editor files
 .vscode
 .idea
 *.swp
 *.swo
+*.swn
+*.bak
+*.sublime*
+.project
+.settings
 
 # Logs
 logs
@@ -29,4 +40,37 @@ logs
 
 # OS generated files
 .DS_Store
-Thumbs.db 
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test coverage
+coverage
+.nyc_output
+
+# Build files
+dist
+build
+*.tsbuildinfo
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+docs
+*.md
+LICENSE
+
+# Development configs
+.eslintrc*
+.prettierrc*
+.editorconfig
+nodemon.json
+jest.config.js
+babel.config.js
+tsconfig.json 
