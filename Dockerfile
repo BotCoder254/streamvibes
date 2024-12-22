@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 ENV PORT=3000 \
     NODE_ENV=production \
     BASE_URL=http://localhost:3000 \
-    MONGODB_URI="mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/streamvista?retryWrites=true&w=majority" \
+    MONGODB_URI="mongodb+srv://stream:telvinteum@stream.o3qip.mongodb.net/?retryWrites=true&w=majority&appName=stream" \
     SESSION_SECRET=KquWbFL6DYB7sw4FxuVXAyZnwbfArT0YpoxF1yNGKZg \
     JWT_SECRET=iYYO8jSXNZauzM7tNKcyQMZhJhwIG-_XcFDwf5OIfgk \
     UPLOAD_DIR=uploads \
