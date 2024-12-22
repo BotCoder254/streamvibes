@@ -1,0 +1,113 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Profile Header -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="p-6">
+                <div class="flex items-center space-x-6">
+                    <div class="flex-shrink-0">
+                        <img class="h-24 w-24 rounded-full object-cover" src="<%= user.avatar || '/images/default-avatar.png' %>" alt="<%= user.username %>">
+                    </div>
+                    <div class="flex-1">
+                        <h1 class="text-2xl font-bold text-gray-900"><%= user.username %></h1>
+                        <p class="text-gray-500 mt-1"><%= user.bio || 'No bio yet' %></p>
+                        <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
+                            <div>
+                                <i class="ph-video mr-1"></i>
+                                <%= videos.length %> videos
+                            </div>
+                            <div>
+                                <i class="ph-eye mr-1"></i>
+                                <%= totalViews.toLocaleString() %> views
+                            </div>
+                            <div>
+                                <i class="ph-thumbs-up mr-1"></i>
+                                <%= totalLikes.toLocaleString() %> likes
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Profile Information</h2>
+                <form action="/profile/update" method="POST" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" name="username" id="username" value="<%= user.username %>" required
+                            class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                        <textarea name="bio" id="bio" rows="3"
+                            class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            placeholder="Tell us about yourself"><%= user.bio || '' %></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                            <input type="url" name="website" id="website" value="<%= user.social?.website || '' %>"
+                                class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                placeholder="https://example.com">
+                        </div>
+
+                        <div>
+                            <label for="twitter" class="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
+                            <input type="text" name="twitter" id="twitter" value="<%= user.social?.twitter || '' %>"
+                                class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                placeholder="@username">
+                        </div>
+
+                        <div>
+                            <label for="instagram" class="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                            <input type="text" name="instagram" id="instagram" value="<%= user.social?.instagram || '' %>"
+                                class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                placeholder="@username">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="ph-floppy-disk mr-2"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Profile Picture Form -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Profile Picture</h2>
+                <form action="/profile/picture" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <div class="flex items-center space-x-6">
+                        <div class="flex-shrink-0">
+                            <img class="h-16 w-16 rounded-full object-cover" src="<%= user.avatar || '/images/default-avatar.png' %>" alt="Current profile picture">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Change Picture</label>
+                            <input type="file" name="avatar" accept="image/*" required
+                                class="mt-1 block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-medium
+                                file:bg-primary-50 file:text-primary-700
+                                hover:file:bg-primary-100">
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="ph-camera mr-2"></i>
+                            Update Picture
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 

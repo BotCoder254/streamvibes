@@ -1,0 +1,263 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Upload Video</h1>
+        
+        <form action="/videos/upload" method="POST" enctype="multipart/form-data" class="space-y-6 bg-white shadow-sm rounded-lg p-6">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" id="title" required 
+                    class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="Enter video title">
+            </div>
+
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea name="description" id="description" rows="4" required
+                    class="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="Describe your video"></textarea>
+            </div>
+
+            <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select name="category" id="category" required
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+                    <option value="">Select a category</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Education">Education</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Music">Music</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="News">News</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="video" class="block text-sm font-medium text-gray-700 mb-1">Video File</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-primary-500 transition-colors">
+                    <div class="space-y-2 text-center">
+                        <i class="ph-upload-simple text-4xl text-gray-400"></i>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="video" class="relative cursor-pointer rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+                                <span>Upload a video</span>
+                                <input id="video" name="video" type="file" accept="video/*" class="sr-only" required>
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500">MP4, MOV, AVI up to 500MB</p>
+                    </div>
+                </div>
+                <!-- Video Preview -->
+                <div id="videoPreview" class="mt-4 hidden">
+                    <video id="previewPlayer" class="w-full rounded-lg" controls>
+                        Your browser does not support the video tag.
+                    </video>
+                    <p id="selectedFileName" class="mt-2 text-sm text-gray-600"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <i class="ph-upload-simple mr-2"></i>
+                    Upload Video
+                </button>
+            </div>
+        </form>
+
+        <!-- Upload Progress -->
+        <div id="uploadProgress" class="mt-8 hidden">
+            <div class="relative pt-1">
+                <div class="flex mb-2 items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary-600 bg-primary-200">
+                            Upload Progress
+                        </span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-semibold inline-block text-primary-600" id="progressText">
+                            0%
+                        </span>
+                    </div>
+                </div>
+                <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-primary-200">
+                    <div id="progressBar" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const category = document.getElementById('category').value;
+    const videoFile = document.getElementById('video').files[0];
+    
+    // Validate required fields
+    if (!title || !description || !category || !videoFile) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    // Validate file size
+    if (videoFile.size > 500 * 1024 * 1024) { // 500MB
+        alert('File size exceeds 500MB limit');
+        return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+    if (!allowedTypes.includes(videoFile.type)) {
+        alert('Please upload a valid video file (MP4, MOV, AVI, MKV)');
+        return;
+    }
+
+    // Append form data
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('category', category);
+    formData.append('video', videoFile);
+
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const submitButton = this.querySelector('button[type="submit"]');
+
+    try {
+        // Disable submit button and show progress
+        submitButton.disabled = true;
+        uploadProgress.classList.remove('hidden');
+
+        // Use XMLHttpRequest for upload progress
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percentComplete + '%';
+                progressText.textContent = percentComplete + '%';
+            }
+        });
+
+        // Create a promise to handle the XHR
+        const uploadPromise = new Promise((resolve, reject) => {
+            xhr.onload = function() {
+                if (xhr.status === 201) {
+                    resolve(JSON.parse(xhr.responseText));
+                } else {
+                    try {
+                        const error = JSON.parse(xhr.responseText);
+                        reject(new Error(error.error || 'Upload failed'));
+                    } catch (e) {
+                        reject(new Error('Upload failed'));
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                reject(new Error('Network error occurred'));
+            };
+        });
+
+        xhr.open('POST', '/videos/upload', true);
+        xhr.send(formData);
+
+        const response = await uploadPromise;
+        
+        // Show 100% progress
+        progressBar.style.width = '100%';
+        progressText.textContent = '100%';
+
+        // Redirect to home page after successful upload
+        window.location.href = response.video.redirectUrl || '/';
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Error uploading video: ' + error.message);
+        uploadProgress.classList.add('hidden');
+        submitButton.disabled = false;
+    }
+});
+
+// File input change handler for preview
+document.getElementById('video').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const videoPreview = document.getElementById('videoPreview');
+        const previewPlayer = document.getElementById('previewPlayer');
+        const selectedFileName = document.getElementById('selectedFileName');
+        
+        // Create object URL for preview
+        const objectUrl = URL.createObjectURL(file);
+        previewPlayer.src = objectUrl;
+        selectedFileName.textContent = `Selected: ${file.name}`;
+        videoPreview.classList.remove('hidden');
+
+        // Clean up object URL when video is loaded
+        previewPlayer.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }
+});
+
+// Drag and drop functionality
+const dropZone = document.querySelector('.border-dashed');
+const fileInput = document.querySelector('input[type="file"]');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight() {
+    dropZone.classList.add('border-primary-500');
+    dropZone.classList.add('bg-primary-50');
+}
+
+function unhighlight() {
+    dropZone.classList.remove('border-primary-500');
+    dropZone.classList.remove('bg-primary-50');
+}
+
+dropZone.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    
+    if (files[0]) {
+        const file = files[0];
+        const videoPreview = document.getElementById('videoPreview');
+        const previewPlayer = document.getElementById('previewPlayer');
+        const selectedFileName = document.getElementById('selectedFileName');
+        
+        // Create object URL for preview
+        const objectUrl = URL.createObjectURL(file);
+        previewPlayer.src = objectUrl;
+        selectedFileName.textContent = `Selected: ${file.name}`;
+        videoPreview.classList.remove('hidden');
+
+        // Clean up object URL when video is loaded
+        previewPlayer.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }
+}</script> 

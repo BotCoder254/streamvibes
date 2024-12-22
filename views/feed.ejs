@@ -1,0 +1,133 @@
+<!-- Main Content -->
+<div class="bg-white min-h-screen">
+    <!-- Search Header -->
+    <div class="border-b bg-white sticky top-0 z-50 desktop-nav">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex-1 max-w-2xl">
+                    <form action="/videos/search" method="GET" class="relative">
+                        <input type="text" name="q" placeholder="Search videos..." 
+                            class="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full focus:outline-none focus:border-gray-300">
+                        <i class="ph-magnifying-glass absolute left-3 top-2.5 text-gray-500"></i>
+                    </form>
+                </div>
+                <div class="flex items-center gap-4 hidden md:flex">
+                    <select name="category" class="bg-gray-100 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none">
+                        <option value="">All Categories</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="education">Education</option>
+                        <option value="gaming">Gaming</option>
+                        <option value="music">Music</option>
+                        <option value="tech">Technology</option>
+                    </select>
+                    <select name="sort" class="bg-gray-100 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none">
+                        <option value="recent">Most Recent</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Grid -->
+    <div class="container mx-auto px-4 py-4 mb-16 md:mb-0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <% videos.forEach(video => { %>
+                <div class="video-card group">
+                    <a href="/videos/watch/<%= video._id %>" class="block">
+                        <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                            <img src="<%= video.thumbnailPath %>" alt="<%= video.title %>" 
+                                class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-200">
+                            <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                                <%= formatDuration(video.duration) %>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="mt-3 flex space-x-3">
+                        <a href="/users/<%= video.user._id %>" class="flex-shrink-0">
+                            <img src="<%= video.user.avatar || '/images/default-avatar.png' %>" 
+                                alt="<%= video.user.username %>" 
+                                class="w-9 h-9 rounded-full">
+                        </a>
+                        <div class="flex-1 min-w-0">
+                            <a href="/videos/watch/<%= video._id %>" class="block">
+                                <h3 class="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-blue-600">
+                                    <%= video.title %>
+                                </h3>
+                                <a href="/users/<%= video.user._id %>" class="mt-1 text-xs text-gray-500 hover:text-gray-700">
+                                    <%= video.user.username %>
+                                </a>
+                                <div class="flex items-center text-xs text-gray-500 mt-1">
+                                    <span><%= video.views.toLocaleString() %> views</span>
+                                    <span class="mx-1">•</span>
+                                    <span><%= new Date(video.createdAt).toLocaleDateString() %></span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Video Card Styles */
+.video-card {
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-200;
+}
+
+.video-card:hover {
+    @apply transform-gpu -translate-y-1;
+}
+
+.video-card .aspect-video {
+    @apply relative w-full pb-[56.25%] bg-gray-100;
+}
+
+.video-card .aspect-video img {
+    @apply absolute inset-0 w-full h-full object-cover;
+}
+
+@media (max-width: 768px) {
+    .desktop-nav {
+        display: none;
+    }
+
+    .container {
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+
+    /* Adjust video grid for mobile */
+    .grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+
+    /* Make video thumbnails larger on mobile */
+    .video-card .aspect-video {
+        height: 200px;
+        padding-bottom: 0;
+    }
+
+    /* Adjust video info spacing */
+    .video-info {
+        gap: 0.5rem;
+    }
+
+    /* Make text more readable on mobile */
+    .text-sm {
+        font-size: 0.9375rem;
+    }
+
+    .text-xs {
+        font-size: 0.8125rem;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+</style> 

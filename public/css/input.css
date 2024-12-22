@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Primary color classes */
+.text-primary-600 {
+    color: rgb(79, 70, 229);
+}
+
+.bg-primary-600 {
+    background-color: rgb(79, 70, 229);
+}
+
+.hover\:bg-primary-700:hover {
+    background-color: rgb(67, 56, 202);
+}
+
+.focus\:ring-primary-500:focus {
+    --tw-ring-color: rgb(99, 102, 241);
+}
+
+.border-primary-500 {
+    border-color: rgb(99, 102, 241);
+} 

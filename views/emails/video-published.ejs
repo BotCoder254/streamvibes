@@ -1,0 +1,49 @@
+<%- contentFor('body') %>
+<h1 style="font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 16px;">Your Video Is Live!</h1>
+
+<p style="color: #374151; line-height: 1.6; margin-bottom: 16px;">
+    Hi <%= user.username %>,
+</p>
+
+<p style="color: #374151; line-height: 1.6; margin-bottom: 16px;">
+    Great news! Your video "<%= video.title %>" has been successfully published on StreamVista.
+</p>
+
+<div style="margin: 24px 0; padding: 16px; background-color: #f3f4f6; border-radius: 6px;">
+    <div style="margin-bottom: 16px;">
+        <img src="<%= video.thumbnailUrl %>" alt="Video Thumbnail" style="width: 100%; max-width: 300px; border-radius: 6px;">
+    </div>
+    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-bottom: 8px;"><%= video.title %></h2>
+    <p style="color: #6b7280; margin: 0;"><%= video.description.substring(0, 150) %>...</p>
+</div>
+
+<p style="color: #374151; line-height: 1.6; margin-bottom: 24px;">
+    You can now:
+</p>
+
+<ul style="color: #374151; line-height: 1.6; margin-bottom: 24px; padding-left: 20px;">
+    <li style="margin-bottom: 8px;">Share your video with your audience</li>
+    <li style="margin-bottom: 8px;">Monitor views and engagement in your dashboard</li>
+    <li style="margin-bottom: 8px;">Respond to comments and interact with viewers</li>
+</ul>
+
+<a href="<%= baseUrl %>/watch/<%= video._id %>" class="button">
+    View Your Video
+</a>
+
+<p style="color: #374151; line-height: 1.6; margin-top: 24px;">
+    Want to track your video's performance? Visit your dashboard to see detailed analytics.
+</p>
+
+<a href="<%= baseUrl %>/dashboard/analytics" style="color: #4f46e5; text-decoration: none; display: inline-block; margin-top: 8px;">
+    View Analytics →
+</a>
+
+<p style="color: #374151; line-height: 1.6; margin-top: 24px;">
+    Keep creating amazing content!
+</p>
+
+<p style="color: #374151; line-height: 1.6;">
+    Best regards,<br>
+    The StreamVista Team
+</p> 

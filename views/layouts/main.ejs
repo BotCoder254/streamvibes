@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'StreamVista' %></title>
+    
+    <!-- Tailwind CSS -->
+    <link href="/css/styles.css" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    
+    <!-- Video.js -->
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        .video-js {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Mobile Navigation Styles */
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+
+            .container {
+                padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+            }
+        }
+
+        /* Mobile Navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 0.5rem 0;
+            z-index: 50;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-nav {
+                display: block;
+            }
+        }
+
+        /* Safe area insets for notched devices */
+        @supports (padding: max(0px)) {
+            .mobile-nav {
+                padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+            }
+        }
+
+        /* Floating Upload Button */
+        .floating-upload {
+            position: fixed;
+            bottom: calc(4rem + env(safe-area-inset-bottom));
+            right: 1rem;
+            background-color: #2563eb;
+            color: white;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 50;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .floating-upload {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <%- include('../partials/navbar') %>
+    
+    <% if(typeof success_msg !== 'undefined' && success_msg != '') { %>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative animate-fade-in" role="alert">
+            <span class="block sm:inline"><%= success_msg %></span>
+        </div>
+    <% } %>
+
+    <% if(typeof error_msg !== 'undefined' && error_msg != '') { %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate-fade-in" role="alert">
+            <span class="block sm:inline"><%= error_msg %></span>
+        </div>
+    <% } %>
+
+    <% if(typeof warning_msg !== 'undefined' && warning_msg != '') { %>
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative animate-fade-in" role="alert">
+            <span class="block sm:inline"><%= warning_msg %></span>
+        </div>
+    <% } %>
+
+    <% if(typeof error !== 'undefined' && error != '') { %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate-fade-in" role="alert">
+            <span class="block sm:inline"><%= error %></span>
+        </div>
+    <% } %>
+
+    <%- body %>
+
+    <% if (isAuthenticated) { %>
+        <!-- Mobile Navigation -->
+        <nav class="mobile-nav">
+            <div class="flex justify-around items-center py-2" style="padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));">
+                <a href="/" class="flex flex-col items-center px-3 py-1 <%= locals.path === '/' ? 'text-blue-600' : 'text-gray-600' %>">
+                    <i class="ph-house-bold text-2xl"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="/videos/trending" class="flex flex-col items-center px-3 py-1 <%= locals.path === '/videos/trending' ? 'text-blue-600' : 'text-gray-600' %>">
+                    <i class="ph-trend-up-bold text-2xl"></i>
+                    <span class="text-xs mt-1">Trending</span>
+                </a>
+                <a href="/videos/upload" class="flex flex-col items-center px-3 py-1 <%= locals.path === '/videos/upload' ? 'text-blue-600' : 'text-gray-600' %>">
+                    <i class="ph-plus-circle-bold text-2xl"></i>
+                    <span class="text-xs mt-1">Upload</span>
+                </a>
+                <a href="/playlists" class="flex flex-col items-center px-3 py-1 <%= locals.path === '/playlists' ? 'text-blue-600' : 'text-gray-600' %>">
+                    <i class="ph-playlist-bold text-2xl"></i>
+                    <span class="text-xs mt-1">Playlists</span>
+                </a>
+                <a href="/profile" class="flex flex-col items-center px-3 py-1 <%= locals.path === '/profile' ? 'text-blue-600' : 'text-gray-600' %>">
+                    <i class="ph-user-bold text-2xl"></i>
+                    <span class="text-xs mt-1">Profile</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Floating Upload Button -->
+        <a href="/videos/upload" class="floating-upload">
+            <i class="ph-plus-bold text-2xl"></i>
+        </a>
+    <% } else { %>
+        <%- include('../partials/footer') %>
+    <% } %>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Initialize Phosphor icons
+        document.addEventListener('DOMContentLoaded', function() {
+            PhosphorIcons.replace();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,195 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Playlist Header -->
+        <div class="flex flex-col md:flex-row gap-8 mb-8">
+            <div class="w-full md:w-1/3">
+                <div class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                    <% if (playlist.videos.length > 0) { %>
+                        <img src="<%= playlist.thumbnail %>" alt="<%= playlist.name %>" class="w-full h-full object-cover">
+                    <% } else { %>
+                        <div class="flex items-center justify-center h-full">
+                            <i class="ph-playlist text-gray-400 text-6xl"></i>
+                        </div>
+                    <% } %>
+                    <div class="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-sm px-2 py-1 rounded">
+                        <%= playlist.videos.length %> videos
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-3xl font-bold text-gray-900"><%= playlist.name %></h1>
+                    <% if (user && playlist.user._id.toString() === user.id) { %>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="editPlaylist()" class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
+                                <i class="ph-pencil"></i>
+                            </button>
+                            <button onclick="deletePlaylist()" class="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100">
+                                <i class="ph-trash"></i>
+                            </button>
+                        </div>
+                    <% } %>
+                </div>
+                <p class="mt-2 text-gray-600"><%= playlist.description %></p>
+                <div class="mt-4 flex items-center text-sm text-gray-500 space-x-4">
+                    <div class="flex items-center">
+                        <img src="<%= playlist.user.avatar || '/images/default-avatar.png' %>" alt="Creator" class="w-6 h-6 rounded-full mr-2">
+                        <span><%= playlist.user.username %></span>
+                    </div>
+                    <span><%= playlist.videos.length %> videos</span>
+                    <span>Created <%= new Date(playlist.createdAt).toLocaleDateString() %></span>
+                    <span class="capitalize"><%= playlist.visibility %></span>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <% if (playlist.videos.length > 0) { %>
+                        <a href="/videos/watch/<%= playlist.videos[0]._id %>?playlist=<%= playlist._id %>" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                            <i class="ph-play mr-2"></i>
+                            Play All
+                        </a>
+                    <% } %>
+                    <button onclick="sharePlaylist()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="ph-share mr-2"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Videos List -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b flex items-center justify-between">
+                <h2 class="text-lg font-medium text-gray-900">Videos</h2>
+                <div class="flex items-center space-x-2 text-sm">
+                    <% if (user && playlist.user._id.toString() === user.id) { %>
+                        <button onclick="reorderVideos()" class="text-gray-500 hover:text-gray-700">
+                            <i class="ph-arrows-up-down mr-1"></i>
+                            Reorder
+                        </button>
+                    <% } %>
+                    <select onchange="sortVideos(this.value)" class="border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500">
+                        <option value="date">Date added</option>
+                        <option value="name">Name</option>
+                        <option value="views">Views</option>
+                    </select>
+                </div>
+            </div>
+            <div id="videosList" class="divide-y">
+                <% playlist.videos.forEach((video, index) => { %>
+                    <div class="p-4 hover:bg-gray-50 flex items-center space-x-4" data-video-id="<%= video._id %>">
+                        <div class="flex-shrink-0 w-4 text-gray-400"><%= index + 1 %></div>
+                        <div class="flex-shrink-0 relative w-40 aspect-video bg-gray-100 rounded overflow-hidden">
+                            <img src="<%= video.thumbnail %>" alt="<%= video.title %>" class="w-full h-full object-cover">
+                            <span class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs px-1 rounded">
+                                <%= Math.floor(video.duration / 60) %>:<%= String(Math.floor(video.duration % 60)).padStart(2, '0') %>
+                            </span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-medium text-gray-900 line-clamp-2"><%= video.title %></h3>
+                            <div class="mt-1 flex items-center text-xs text-gray-500">
+                                <span><%= video.user.username %></span>
+                                <span class="mx-1">•</span>
+                                <span><%= video.views %> views</span>
+                                <span class="mx-1">•</span>
+                                <span><%= new Date(video.createdAt).toLocaleDateString() %></span>
+                            </div>
+                        </div>
+                        <% if (user && playlist.user._id.toString() === user.id) { %>
+                            <button onclick="removeVideo('<%= video._id %>')" class="p-2 text-gray-400 hover:text-red-600">
+                                <i class="ph-x"></i>
+                            </button>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sharePlaylist() {
+        const playlistUrl = window.location.href;
+        if (navigator.share) {
+            navigator.share({
+                title: '<%= playlist.name %>',
+                text: '<%= playlist.description %>',
+                url: playlistUrl
+            });
+        } else {
+            navigator.clipboard.writeText(playlistUrl)
+                .then(() => alert('Playlist link copied to clipboard!'))
+                .catch(err => console.error('Error copying link:', err));
+        }
+    }
+
+    async function removeVideo(videoId) {
+        if (!confirm('Remove this video from the playlist?')) return;
+
+        try {
+            const response = await fetch(`/playlists/<%= playlist._id %>/videos/${videoId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Failed to remove video');
+
+            window.location.reload();
+        } catch (err) {
+            console.error('Error removing video:', err);
+            alert('Error removing video. Please try again.');
+        }
+    }
+
+    function sortVideos(method) {
+        const videosList = document.getElementById('videosList');
+        const videos = Array.from(videosList.children);
+
+        videos.sort((a, b) => {
+            switch (method) {
+                case 'name':
+                    return a.querySelector('h3').textContent.localeCompare(b.querySelector('h3').textContent);
+                case 'views':
+                    return parseInt(b.querySelector('.text-gray-500').textContent) - 
+                           parseInt(a.querySelector('.text-gray-500').textContent);
+                default: // date
+                    return new Date(b.dataset.date) - new Date(a.dataset.date);
+            }
+        });
+
+        videos.forEach(video => videosList.appendChild(video));
+    }
+
+    // Initialize Sortable.js for drag and drop reordering
+    let sortable;
+    function reorderVideos() {
+        if (sortable) {
+            sortable.destroy();
+            sortable = null;
+            return;
+        }
+
+        sortable = new Sortable(document.getElementById('videosList'), {
+            animation: 150,
+            onEnd: async function() {
+                const videoIds = Array.from(document.querySelectorAll('[data-video-id]'))
+                    .map(el => el.dataset.videoId);
+
+                try {
+                    const response = await fetch(`/playlists/<%= playlist._id %>/reorder`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ videoIds })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to reorder videos');
+                } catch (err) {
+                    console.error('Error reordering videos:', err);
+                    alert('Error reordering videos. Please try again.');
+                }
+            }
+        });
+    }
+</script>
+
+<!-- Include Sortable.js for drag and drop reordering -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script> 

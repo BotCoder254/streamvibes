@@ -1,0 +1,907 @@
+<!-- Main Content -->
+<div class="bg-white min-h-screen">
+    <!-- Search Header -->
+    <div class="border-b bg-white sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex-1 max-w-2xl">
+                    <form action="/videos/search" method="GET" class="relative">
+                        <input type="text" name="q" placeholder="Search videos..." 
+                            class="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full focus:outline-none focus:border-gray-300">
+                        <i class="ph-magnifying-glass absolute left-3 top-2.5 text-gray-500"></i>
+                    </form>
+                </div>
+                <div class="flex items-center gap-4">
+                    <select name="category" class="bg-gray-100 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none">
+                        <option value="">All Categories</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="education">Education</option>
+                        <option value="gaming">Gaming</option>
+                        <option value="music">Music</option>
+                        <option value="tech">Technology</option>
+                    </select>
+                    <select name="sort" class="bg-gray-100 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none">
+                        <option value="recent">Most Recent</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Content -->
+    <div class="container mx-auto px-4 py-4 mb-16 md:mb-0">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Main Video Section -->
+            <div class="flex-1">
+                <!-- Video Player -->
+                <div class="relative aspect-video bg-black rounded-xl overflow-hidden">
+                    <video 
+                        id="videoPlayer" 
+                        class="video-js vjs-theme-forest vjs-big-play-centered vjs-fluid" 
+                        controls 
+                        preload="auto" 
+                        width="100%"
+                        height="100%"
+                        data-setup='{
+                            "fluid": true,
+                            "playbackRates": [0.5, 1, 1.25, 1.5, 1.75, 2],
+                            "responsive": true
+                        }'
+                    >
+                        <source src="<%= video.videoPath %>" type="video/mp4">
+                        <p class="vjs-no-js">
+                            To view this video please enable JavaScript, and consider upgrading to a web browser that
+                            <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                        </p>
+                    </video>
+                </div>
+
+                <!-- Video Info -->
+                <div class="mt-4">
+                    <h1 class="text-xl md:text-2xl font-semibold text-gray-900"><%= video.title %></h1>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mt-2 pb-4 border-b gap-4">
+                        <div class="flex items-center gap-4 text-sm text-gray-600">
+                            <span><%= video.formattedViews %> views</span>
+                            <span>•</span>
+                            <span><%= video.formattedDate %></span>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 md:pb-0">
+                            <!-- Like/Dislike buttons -->
+                            <button type="button" onclick="handleLike()" 
+                                class="like-button flex items-center gap-2 hover:bg-gray-100 px-3 md:px-4 py-2 rounded-full <%= video.isLikedBy() ? 'text-blue-600' : 'text-gray-600' %>">
+                                <i class="ph-thumbs-up text-xl"></i>
+                                <span class="like-count"><%= video.likes.length %></span>
+                            </button>
+                            <button type="button" onclick="handleDislike()" 
+                                class="dislike-button flex items-center gap-2 hover:bg-gray-100 px-3 md:px-4 py-2 rounded-full <%= video.isDislikedBy() ? 'text-blue-600' : 'text-gray-600' %>">
+                                <i class="ph-thumbs-down text-xl"></i>
+                                <span class="dislike-count"><%= video.dislikes.length %></span>
+                            </button>
+                            <!-- Share button -->
+                            <button onclick="shareVideo()" class="flex items-center gap-2 hover:bg-gray-100 px-3 md:px-4 py-2 rounded-full">
+                                <i class="ph-share text-xl"></i>
+                                <span class="hidden md:inline">Share</span>
+                            </button>
+                            <!-- Save button -->
+                            <% if (isAuthenticated) { %>
+                                <div class="relative playlist-menu-container">
+                                    <button onclick="togglePlaylistMenu()" class="flex items-center gap-2 hover:bg-gray-100 px-3 md:px-4 py-2 rounded-full">
+                                        <i class="ph-list-plus text-xl"></i>
+                                        <span class="hidden md:inline">Save</span>
+                                    </button>
+                                    <!-- Playlist menu -->
+                                    <div id="playlistMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-50">
+                                        <div class="p-3 border-b">
+                                            <h3 class="font-medium">Save to...</h3>
+                                        </div>
+                                        <div class="max-h-64 overflow-y-auto">
+                                            <% if (playlists && playlists.length > 0) { %>
+                                                <% playlists.forEach(playlist => { %>
+                                                    <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                                        <span class="text-sm"><%= playlist.name %></span>
+                                                        <button onclick="toggleVideoInPlaylist('<%= video._id %>', '<%= playlist._id %>')"
+                                                            class="text-blue-600 hover:text-blue-800">
+                                                            <% if (playlist.videos && playlist.videos.includes(video._id)) { %>
+                                                                <i class="ph-check text-lg"></i>
+                                                            <% } else { %>
+                                                                <i class="ph-plus text-lg"></i>
+                                                            <% } %>
+                                                        </button>
+                                                    </div>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <div class="p-3 text-center text-gray-500">
+                                                    No playlists yet
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                        <div class="p-3 border-t">
+                                            <a href="/playlists/create" class="block w-full text-left text-blue-600 hover:text-blue-800">
+                                                <i class="ph-plus"></i> Create new playlist
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Channel Info -->
+                    <div class="flex items-start justify-between py-4">
+                        <div class="flex items-start gap-4">
+                            <a href="/users/<%= video.user._id %>" class="flex-shrink-0">
+                                <img src="<%= video.user.avatar || '/images/default-avatar.png' %>" alt="<%= video.user.username %>" 
+                                    class="w-10 h-10 rounded-full">
+                            </a>
+                            <div>
+                                <div class="flex items-center gap-3">
+                                    <a href="/users/<%= video.user._id %>" class="font-medium text-gray-900 hover:text-blue-600">
+                                        <%= video.user.username %>
+                                    </a>
+                                    <% if (isAuthenticated && video.user._id.toString() === user._id.toString()) { %>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="openEditModal()" class="text-sm text-gray-600 hover:text-blue-600">
+                                                <i class="ph-pencil"></i> Edit
+                                            </button>
+                                            <button type="button" onclick="openDeleteModal()" class="text-sm text-red-600 hover:text-red-700">
+                                                <i class="ph-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600 whitespace-pre-wrap"><%= video.description %></p>
+                                <div class="mt-2 flex flex-wrap gap-2">
+                                    <% if (video.tags && video.tags.length > 0) { %>
+                                        <% video.tags.forEach(tag => { %>
+                                            <a href="/videos/search?q=<%= tag %>" 
+                                                class="text-xs text-blue-600 hover:text-blue-800">
+                                                #<%= tag %>
+                                            </a>
+                                        <% }); %>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <% if (isAuthenticated && video.user._id.toString() !== user._id.toString()) { %>
+                            <button onclick="handleSubscribe()" 
+                                class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 font-medium">
+                                Subscribe
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar - Related Videos -->
+            <div class="w-full lg:w-96">
+                <div class="lg:sticky lg:top-20">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-medium text-gray-900">Related Videos</h2>
+                        <div class="flex gap-2">
+                            <button class="text-sm text-gray-600 hover:text-gray-900">Similar</button>
+                            <button class="text-sm text-gray-600 hover:text-gray-900">Trending</button>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <% relatedVideos.forEach(relatedVideo => { %>
+                            <a href="/videos/watch/<%= relatedVideo._id %>" 
+                                class="flex gap-3 group hover:bg-gray-50 p-2 rounded-lg">
+                                <div class="relative flex-shrink-0 w-40 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                                    <img src="<%= relatedVideo.thumbnail %>" alt="<%= relatedVideo.title %>" 
+                                        class="w-full h-full object-cover">
+                                    <span class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs px-1.5 py-0.5 rounded">
+                                        <%= relatedVideo.formattedDuration %>
+                                    </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-blue-600">
+                                        <%= relatedVideo.title %>
+                                    </h3>
+                                    <p class="mt-1 text-xs text-gray-600"><%= relatedVideo.user.username %></p>
+                                    <div class="mt-1 flex items-center text-xs text-gray-600">
+                                        <span><%= relatedVideo.formattedViews %> views</span>
+                                        <span class="mx-1">•</span>
+                                        <span><%= relatedVideo.formattedDate %></span>
+                                    </div>
+                                </div>
+                            </a>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video.js CSS -->
+<link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet" />
+<link href="https://unpkg.com/@videojs/themes/dist/forest/index.css" rel="stylesheet">
+
+<!-- Video.js -->
+<script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Video</h3>
+                <form id="editForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Title</label>
+                        <input type="text" id="editTitle" name="title" value="<%= video.title %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="editDescription" name="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"><%= video.description %></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tags (comma separated)</label>
+                        <input type="text" id="editTags" name="tags" value="<%= video.tags.join(', ') %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Delete Video</h3>
+                <p class="text-gray-500 mb-4">Are you sure you want to delete this video? This action cannot be undone.</p>
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeDeleteModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
+                    <button onclick="deleteVideo()" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div id="successToast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full opacity-0 transition-all duration-300 hidden">
+    <span id="successMessage"></span>
+</div>
+
+<!-- Error Toast -->
+<div id="errorToast" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full opacity-0 transition-all duration-300 hidden">
+    <span id="errorMessage"></span>
+</div>
+
+<!-- Comments Section -->
+<div class="mt-8 border-t pt-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Comments (<%= video.commentCount || 0 %>)</h3>
+    
+    <% if (isAuthenticated) { %>
+        <form onsubmit="addComment(event)" class="mb-6">
+            <div class="flex gap-4">
+                <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
+                    alt="<%= user.username %>" 
+                    class="w-10 h-10 rounded-full">
+                <div class="flex-1">
+                    <textarea id="commentInput"
+                        class="w-full px-0 py-2 bg-transparent border-b border-gray-200 focus:outline-none focus:border-blue-500 resize-none"
+                        placeholder="Add a comment..."
+                        rows="1"
+                        oninput="autoResize(this)"
+                        onfocus="showCommentActions()"
+                        required></textarea>
+                    <div class="flex justify-end gap-2 mt-2 comment-actions" style="display: none;">
+                        <button type="button" onclick="hideCommentActions()"
+                            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800">Cancel</button>
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700">Comment</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    <% } else { %>
+        <div class="text-center py-4 bg-gray-50 rounded-lg">
+            <p class="text-gray-600">Please <a href="/users/login" class="text-blue-600 hover:text-blue-800">log in</a> to comment</p>
+        </div>
+    <% } %>
+
+    <div class="comments-container space-y-6">
+        <% if (video.comments && video.comments.length > 0) { %>
+            <% video.comments.forEach(comment => { %>
+                <div id="comment-<%= comment._id %>" class="comment-item group">
+                    <div class="flex gap-4">
+                        <a href="/users/<%= comment.user._id %>" class="flex-shrink-0">
+                            <img src="<%= comment.user.avatar || '/images/default-avatar.png' %>" 
+                                alt="<%= comment.user.username %>" 
+                                class="w-10 h-10 rounded-full">
+                        </a>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <a href="/users/<%= comment.user._id %>" class="font-medium text-gray-900 hover:text-blue-600">
+                                    <%= comment.user.username %>
+                                </a>
+                                <span class="text-sm text-gray-500"><%= new Date(comment.createdAt).toLocaleDateString() %></span>
+                                <% if (comment.edited) { %>
+                                    <span class="text-sm text-gray-500">(edited)</span>
+                                <% } %>
+                            </div>
+                            <p class="mt-1 text-gray-900 comment-text"><%= comment.text %></p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <% if (isAuthenticated) { %>
+                                    <button onclick="toggleReplyForm('<%= comment._id %>')"
+                                        class="text-sm font-medium text-gray-600 hover:text-gray-900">Reply</button>
+                                    <% if (user._id.toString() === comment.user._id.toString()) { %>
+                                        <button onclick="editComment('<%= comment._id %>')"
+                                            class="text-sm font-medium text-gray-600 hover:text-gray-900">Edit</button>
+                                        <button onclick="deleteComment('<%= comment._id %>')"
+                                            class="text-sm font-medium text-gray-600 hover:text-gray-900">Delete</button>
+                                    <% } else if (user._id.toString() === video.user._id.toString()) { %>
+                                        <button onclick="deleteComment('<%= comment._id %>')"
+                                            class="text-sm font-medium text-gray-600 hover:text-gray-900">Delete</button>
+                                    <% } %>
+                                <% } %>
+                            </div>
+
+                            <!-- Reply Form -->
+                            <% if (isAuthenticated) { %>
+                                <form id="reply-form-<%= comment._id %>" 
+                                    onsubmit="addReply(event, '<%= comment._id %>')" 
+                                    class="mt-4 hidden">
+                                    <div class="flex gap-4">
+                                        <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
+                                            alt="<%= user.username %>" 
+                                            class="w-8 h-8 rounded-full">
+                                        <div class="flex-1">
+                                            <textarea
+                                                class="w-full px-0 py-2 bg-transparent border-b border-gray-200 focus:outline-none focus:border-blue-500 resize-none"
+                                                placeholder="Add a reply..."
+                                                rows="1"
+                                                oninput="autoResize(this)"
+                                                required></textarea>
+                                            <div class="flex justify-end gap-2 mt-2">
+                                                <button type="button" 
+                                                    onclick="toggleReplyForm('<%= comment._id %>')"
+                                                    class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800">Cancel</button>
+                                                <button type="submit"
+                                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700">Reply</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            <% } %>
+
+                            <!-- Replies -->
+                            <div id="replies-<%= comment._id %>" class="mt-4 ml-12 space-y-4">
+                                <% if (comment.replies && comment.replies.length > 0) { %>
+                                    <% comment.replies.forEach(reply => { %>
+                                        <div id="comment-<%= reply._id %>" class="reply-item group">
+                                            <div class="flex gap-4">
+                                                <a href="/users/<%= reply.user._id %>" class="flex-shrink-0">
+                                                    <img src="<%= reply.user.avatar || '/images/default-avatar.png' %>" 
+                                                        alt="<%= reply.user.username %>" 
+                                                        class="w-8 h-8 rounded-full">
+                                                </a>
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2">
+                                                        <a href="/users/<%= reply.user._id %>" class="font-medium text-gray-900 hover:text-blue-600">
+                                                            <%= reply.user.username %>
+                                                        </a>
+                                                        <span class="text-sm text-gray-500"><%= new Date(reply.createdAt).toLocaleDateString() %></span>
+                                                        <% if (reply.edited) { %>
+                                                            <span class="text-sm text-gray-500">(edited)</span>
+                                                        <% } %>
+                                                    </div>
+                                                    <p class="mt-1 text-gray-900 comment-text"><%= reply.text %></p>
+                                                    <div class="flex items-center gap-4 mt-2">
+                                                        <% if (isAuthenticated) { %>
+                                                            <% if (user._id.toString() === reply.user._id.toString()) { %>
+                                                                <button onclick="editComment('<%= reply._id %>')"
+                                                                    class="text-sm font-medium text-gray-600 hover:text-gray-900">Edit</button>
+                                                                <button onclick="deleteComment('<%= reply._id %>')"
+                                                                    class="text-sm font-medium text-gray-600 hover:text-gray-900">Delete</button>
+                                                            <% } else if (user._id.toString() === video.user._id.toString()) { %>
+                                                                <button onclick="deleteComment('<%= reply._id %>')"
+                                                                    class="text-sm font-medium text-gray-600 hover:text-gray-900">Delete</button>
+                                                            <% } %>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="text-center py-8 text-gray-500">
+                No comments yet. Be the first to comment!
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Add comment functions -->
+<script>
+async function addComment(event) {
+    event.preventDefault();
+    const form = event.target;
+    const textarea = form.querySelector('textarea');
+    const text = textarea.value.trim();
+    const parentCommentId = form.dataset.parentId;
+
+    if (!text) return;
+
+    try {
+        const response = await fetch(`/videos/<%= video._id %>/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text,
+                parentCommentId
+            })
+        });
+
+        if (!response.ok) throw new Error('Failed to add comment');
+
+        const data = await response.json();
+        window.location.reload();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to add comment. Please try again.');
+    }
+}
+
+function toggleReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    form.classList.toggle('hidden');
+    if (!form.classList.contains('hidden')) {
+        form.querySelector('textarea').focus();
+    }
+}
+
+async function editComment(commentId) {
+    const commentElement = document.getElementById(`comment-${commentId}`);
+    const commentText = commentElement.querySelector('.comment-text').textContent;
+    const newText = prompt('Edit your comment:', commentText);
+
+    if (newText === null || newText.trim() === commentText) return;
+
+    try {
+        const response = await fetch(`/videos/<%= video._id %>/comments/${commentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text: newText.trim()
+            })
+        });
+
+        if (!response.ok) throw new Error('Failed to update comment');
+
+        const data = await response.json();
+        window.location.reload();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to update comment. Please try again.');
+    }
+}
+
+async function deleteComment(commentId) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+        const response = await fetch(`/videos/<%= video._id %>/comments/${commentId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error('Failed to delete comment');
+
+        const data = await response.json();
+        window.location.reload();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to delete comment. Please try again.');
+    }
+}
+</script>
+
+<!-- Add this right after the comments section -->
+<script>
+    // Initialize video player
+    document.addEventListener('DOMContentLoaded', function() {
+        var player = videojs('videoPlayer', {
+            controls: true,
+            autoplay: false,
+            fluid: true,
+            preload: 'auto',
+            playbackRates: [0.5, 1, 1.25, 1.5, 1.75, 2],
+            responsive: true
+        });
+    });
+
+    // Like/Dislike functions
+    function handleLike() {
+        if (!<%= isAuthenticated %>) {
+            window.location.href = '/users/login';
+            return;
+        }
+        fetch(`/videos/<%= video._id %>/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                const likeButton = document.querySelector('.like-button');
+                const dislikeButton = document.querySelector('.dislike-button');
+                const likeCount = document.querySelector('.like-count');
+                const dislikeCount = document.querySelector('.dislike-count');
+
+                if (data.liked) {
+                    likeButton.classList.remove('text-gray-600');
+                    likeButton.classList.add('text-blue-600');
+                    dislikeButton.classList.remove('text-blue-600');
+                    dislikeButton.classList.add('text-gray-600');
+                } else {
+                    likeButton.classList.remove('text-blue-600');
+                    likeButton.classList.add('text-gray-600');
+                }
+
+                likeCount.textContent = data.likes;
+                dislikeCount.textContent = data.dislikes;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function handleDislike() {
+        if (!<%= isAuthenticated %>) {
+            window.location.href = '/users/login';
+            return;
+        }
+        fetch(`/videos/<%= video._id %>/dislike`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                const likeButton = document.querySelector('.like-button');
+                const dislikeButton = document.querySelector('.dislike-button');
+                const likeCount = document.querySelector('.like-count');
+                const dislikeCount = document.querySelector('.dislike-count');
+
+                if (data.disliked) {
+                    dislikeButton.classList.remove('text-gray-600');
+                    dislikeButton.classList.add('text-blue-600');
+                    likeButton.classList.remove('text-blue-600');
+                    likeButton.classList.add('text-gray-600');
+                } else {
+                    dislikeButton.classList.remove('text-blue-600');
+                    dislikeButton.classList.add('text-gray-600');
+                }
+
+                likeCount.textContent = data.likes;
+                dislikeCount.textContent = data.dislikes;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Share functionality
+    function shareVideo() {
+        if (navigator.share) {
+            navigator.share({
+                title: '<%= video.title %>',
+                url: window.location.href
+            })
+            .catch(console.error);
+        } else {
+            // Fallback for browsers that don't support Web Share API
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = window.location.href;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Link copied to clipboard!');
+        }
+    }
+
+    // Playlist menu functionality
+    function togglePlaylistMenu() {
+        if (!<%= isAuthenticated %>) {
+            window.location.href = '/users/login';
+            return;
+        }
+        const menu = document.getElementById('playlistMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Edit/Delete functions
+    function openEditModal() {
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function openDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Handle edit form submission
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        fetch(`/videos/<%= video._id %>/edit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: document.getElementById('editTitle').value,
+                description: document.getElementById('editDescription').value,
+                tags: document.getElementById('editTags').value.split(',').map(tag => tag.trim())
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update video. Please try again.');
+        });
+    });
+
+    // Handle video deletion
+    function deleteVideo() {
+        fetch(`/videos/<%= video._id %>/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete video. Please try again.');
+        });
+    }
+
+    // Comment functions
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function showCommentActions() {
+        document.querySelector('.comment-actions').style.display = 'flex';
+    }
+
+    function hideCommentActions() {
+        document.querySelector('.comment-actions').style.display = 'none';
+        document.getElementById('commentInput').value = '';
+        document.getElementById('commentInput').style.height = 'auto';
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        const editModal = document.getElementById('editModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const playlistMenu = document.getElementById('playlistMenu');
+        
+        if (event.target === editModal) {
+            closeEditModal();
+        }
+        
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+
+        if (playlistMenu && !event.target.closest('.playlist-menu-container')) {
+            playlistMenu.classList.add('hidden');
+        }
+    });
+
+    // Add playlist functionality
+    function toggleVideoInPlaylist(videoId, playlistId) {
+        fetch(`/playlists/${playlistId}/videos/${videoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating playlist');
+        });
+    }
+</script>
+
+<!-- Add mobile navigation styles -->
+<style>
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.floating-upload {
+    position: fixed;
+    bottom: calc(4rem + env(safe-area-inset-bottom));
+    right: 1rem;
+    background-color: #2563eb;
+    color: white;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: bounce 2s infinite;
+    z-index: 50;
+}
+
+.floating-upload:hover {
+    background-color: #1d4ed8;
+    transform: scale(1.1);
+}
+
+.floating-upload i {
+    font-size: 1.5rem;
+}
+
+/* Mobile Navigation */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.5rem 0;
+    z-index: 50;
+}
+
+.mobile-nav-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #6b7280;
+    font-size: 0.75rem;
+    padding: 0.5rem;
+}
+
+.mobile-nav-item i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.mobile-nav-item.active {
+    color: #2563eb;
+}
+
+@media (max-width: 768px) {
+    .mobile-nav {
+        display: block;
+    }
+
+    .floating-upload {
+        bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+
+    /* Hide desktop navigation */
+    .desktop-nav {
+        display: none;
+    }
+
+    /* Adjust main content padding */
+    .container {
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+
+    /* Make video info section more compact */
+    .video-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Adjust buttons for better touch targets */
+    .action-button {
+        padding: 0.75rem 1rem;
+    }
+
+    /* Make comments section more readable */
+    .comment-text {
+        font-size: 0.875rem;
+    }
+
+    /* Adjust related videos layout */
+    .related-video {
+        flex-direction: row;
+        gap: 0.75rem;
+    }
+
+    .related-video-thumbnail {
+        width: 160px;
+        height: 90px;
+    }
+}
+</style>
+
+<!-- Add the mobile navigation -->
+<nav class="mobile-nav">
+    <div class="mobile-nav-content">
+        <a href="/" class="mobile-nav-item <%= (path && path === '/') ? 'active' : '' %>">
+            <i class="ph-house-bold"></i>
+            <span>Home</span>
+        </a>
+        <a href="/videos/trending" class="mobile-nav-item <%= (path && path === '/videos/trending') ? 'active' : '' %>">
+            <i class="ph-trend-up-bold"></i>
+            <span>Trending</span>
+        </a>
+        <a href="/videos/upload" class="mobile-nav-item <%= (path && path === '/videos/upload') ? 'active' : '' %>">
+            <i class="ph-plus-circle-bold"></i>
+            <span>Upload</span>
+        </a>
+        <a href="/playlists" class="mobile-nav-item <%= (path && path === '/playlists') ? 'active' : '' %>">
+            <i class="ph-playlist-bold"></i>
+            <span>Playlists</span>
+        </a>
+        <a href="/profile" class="mobile-nav-item <%= (path && path === '/profile') ? 'active' : '' %>">
+            <i class="ph-user-bold"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Add the floating upload button -->
+<a href="/videos/upload" class="floating-upload lg:hidden">
+    <i class="ph-plus-bold"></i>
+</a>
+</body>
+</html> 

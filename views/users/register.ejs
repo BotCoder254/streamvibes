@@ -1,0 +1,201 @@
+<div class="min-h-screen flex">
+    <!-- Left Side - Image -->
+    <div class="hidden lg:block relative w-1/2">
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent z-10"></div>
+        <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1616763355548-1b606f439f86?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Background">
+        <div class="absolute bottom-0 left-0 right-0 p-20 z-20">
+            <div class="text-white">
+                <h2 class="text-4xl font-bold">Start Your Journey</h2>
+                <p class="mt-4 text-lg text-gray-200">Join our community of creators and share your vision with the world.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Form -->
+    <div class="flex-1 flex items-center justify-center p-8 sm:px-12 lg:px-20 bg-white">
+        <div class="w-full max-w-md space-y-8">
+            <div>
+                <div class="flex justify-center">
+                    <a href="/" class="text-3xl font-bold text-primary-600 flex items-center">
+                        <i class="ph-play-circle-fill mr-2"></i>
+                        StreamVista
+                    </a>
+                </div>
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900 text-center">
+                    Create your account
+                </h2>
+                <p class="mt-2 text-sm text-gray-600 text-center">
+                    Already have an account?
+                    <a href="/users/login" class="font-medium text-primary-600 hover:text-primary-500">
+                        Sign in
+                    </a>
+                </p>
+            </div>
+
+            <% if(typeof errors !== 'undefined' && errors.length > 0) { %>
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 alert-dismissible">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="ph-warning-circle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <% errors.forEach(function(error) { %>
+                                <p class="text-sm text-red-700"><%= error.msg %></p>
+                            <% }); %>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <div class="-mx-1.5 -my-1.5">
+                                <button type="button" class="close-alert inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100">
+                                    <span class="sr-only">Dismiss</span>
+                                    <i class="ph-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+            
+            <% if(typeof success_msg !== 'undefined' && success_msg !== '') { %>
+                <div class="bg-green-50 border-l-4 border-green-400 p-4 alert-dismissible">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="ph-check-circle text-green-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-green-700"><%= success_msg %></p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <div class="-mx-1.5 -my-1.5">
+                                <button type="button" class="close-alert inline-flex rounded-md p-1.5 text-green-500 hover:bg-green-100">
+                                    <span class="sr-only">Dismiss</span>
+                                    <i class="ph-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+            
+            <% if(typeof error_msg !== 'undefined' && error_msg !== '') { %>
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 alert-dismissible">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="ph-warning-circle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700"><%= error_msg %></p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <div class="-mx-1.5 -my-1.5">
+                                <button type="button" class="close-alert inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100">
+                                    <span class="sr-only">Dismiss</span>
+                                    <i class="ph-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <form class="mt-8 space-y-6" action="/users/register" method="POST">
+                <div class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input id="username" name="username" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Choose a username">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <input id="email" name="email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input id="password" name="password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Create a password">
+                    </div>
+                    <div>
+                        <label for="password2" class="block text-sm font-medium text-gray-700">Confirm password</label>
+                        <input id="password2" name="password2" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Confirm your password">
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <input id="terms" name="terms" type="checkbox" required class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="terms" class="ml-2 block text-sm text-gray-900">
+                        I agree to the
+                        <a href="/terms" class="font-medium text-primary-600 hover:text-primary-500">
+                            Terms of Service
+                        </a>
+                        and
+                        <a href="/privacy" class="font-medium text-primary-600 hover:text-primary-500">
+                            Privacy Policy
+                        </a>
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transform transition-all hover:scale-105">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="ph-user-plus text-primary-500 group-hover:text-primary-400"></i>
+                        </span>
+                        Create account
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">
+                            Or continue with
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-3 gap-3">
+                    <a href="/auth/google" class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transform transition-all hover:scale-105">
+                        <i class="ph-google-logo text-xl"></i>
+                    </a>
+                    <a href="/auth/facebook" class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transform transition-all hover:scale-105">
+                        <i class="ph-facebook-logo text-xl"></i>
+                    </a>
+                    <a href="/auth/twitter" class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transform transition-all hover:scale-105">
+                        <i class="ph-twitter-logo text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            document.querySelectorAll('.alert-dismissible').forEach(function(alert) {
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.style.display = 'none';
+                }, 300);
+            });
+        }, 5000);
+
+        // Manual dismiss on click
+        document.querySelectorAll('.close-alert').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const alert = this.closest('.alert-dismissible');
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.style.display = 'none';
+                }, 300);
+            });
+        });
+    });
+</script>
+
+<style>
+    .alert-dismissible {
+        transition: opacity 0.3s ease-in-out;
+    }
+</style> 
