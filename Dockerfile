@@ -15,8 +15,10 @@ RUN apk add --no-cache \
        /app/public/uploads/thumbnails \
        /app/public/uploads/avatars \
        /app/uploads/temp \
+       /app/logs \
     && chmod -R 755 /app/public/uploads \
     && chmod -R 755 /app/uploads \
+    && chmod -R 755 /app/logs \
     && addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Set environment variables
@@ -42,7 +44,8 @@ COPY --chown=appuser:appgroup . .
 
 # Set proper permissions
 RUN chown -R appuser:appgroup /app/public/uploads \
-    && chown -R appuser:appgroup /app/uploads
+    && chown -R appuser:appgroup /app/uploads \
+    && chown -R appuser:appgroup /app/logs
 
 # Switch to non-root user
 USER appuser

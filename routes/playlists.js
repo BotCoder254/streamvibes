@@ -138,7 +138,7 @@ router.delete('/:id', ensureAuthenticated, async (req, res) => {
             return res.status(404).json({ error: 'Playlist not found or unauthorized' });
         }
 
-        await playlist.remove();
+        await Playlist.deleteOne({ _id: playlist._id });
 
         res.json({
             message: 'Playlist deleted successfully',
