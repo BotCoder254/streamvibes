@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuthenticated } = require('../../config/auth');
+const { ensureAuthenticated } = require('../../middleware/auth');
 const Video = require('../../models/Video');
 const User = require('../../models/User');
 

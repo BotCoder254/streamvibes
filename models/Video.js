@@ -76,11 +76,12 @@ const videoSchema = new mongoose.Schema({
     },
     thumbnailPath: {
         type: String,
-        required: true
+        required: true,
+        default: '/images/default-thumbnail.jpg'
     },
     duration: {
         type: Number,
-        required: true
+        default: 0
     },
     views: {
         type: Number,
@@ -98,11 +99,13 @@ const videoSchema = new mongoose.Schema({
     }],
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        default: []
     }],
     dislikes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        default: []
     }],
     category: {
         type: String,
@@ -119,26 +122,45 @@ const videoSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    comments: [commentSchema],
+    comments: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        text: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        },
+        edited: {
+            type: Boolean,
+            default: false
+        },
+        editedAt: Date,
+        likes: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: []
+        }]
+    }],
     status: {
         type: String,
         enum: ['processing', 'ready', 'failed'],
-        default: 'processing'
+        default: 'ready'
     },
     tags: {
         type: [String],
         default: []
-    },
-    watchTimeDistribution: {
-        type: [Number],
-        default: [0, 0, 0, 0] // 0-25%, 25-50%, 50-75%, 75-100%
-    },
-    totalWatchTime: {
-        type: Number,
-        default: 0
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
 });
 
 // Add indexes for better query performance

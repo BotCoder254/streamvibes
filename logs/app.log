@@ -1,0 +1,3 @@
+2024-12-22T23:18:09.227Z [Upload Success]: Error: Video created: 67689e30758db3f2b7c3ba80
+    at /home/teum/Downloads/streamvibes/routes/videos.js:423:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

@@ -130,21 +130,21 @@
                     <!-- Channel Info -->
                     <div class="flex items-start justify-between py-4">
                         <div class="flex items-start gap-4">
-                            <a href="/users/<%= video.user._id %>" class="flex-shrink-0">
-                                <img src="<%= video.user.avatar || '/images/default-avatar.png' %>" alt="<%= video.user.username %>" 
+                            <a href="/users/<%= video.uploader._id %>" class="flex-shrink-0">
+                                <img src="<%= video.uploader.avatar || '/images/default-avatar.png' %>" alt="<%= video.uploader.username %>" 
                                     class="w-10 h-10 rounded-full">
                             </a>
                             <div>
                                 <div class="flex items-center gap-3">
-                                    <a href="/users/<%= video.user._id %>" class="font-medium text-gray-900 hover:text-blue-600">
-                                        <%= video.user.username %>
+                                    <a href="/users/<%= video.uploader._id %>" class="font-medium text-gray-900 hover:text-blue-600">
+                                        <%= video.uploader.username %>
                                     </a>
-                                    <% if (isAuthenticated && video.user._id.toString() === user._id.toString()) { %>
+                                    <% if (isAuthenticated && video.uploader._id.toString() === user._id.toString()) { %>
                                         <div class="flex items-center gap-2">
                                             <button type="button" onclick="openEditModal()" class="text-sm text-gray-600 hover:text-blue-600">
                                                 <i class="ph-pencil"></i> Edit
                                             </button>
-                                            <button type="button" onclick="openDeleteModal()" class="text-sm text-red-600 hover:text-red-700">
+                                            <button type="button" onclick="openDeleteModal()" class="text-sm text-gray-600 hover:text-red-600">
                                                 <i class="ph-trash"></i> Delete
                                             </button>
                                         </div>
@@ -163,7 +163,7 @@
                                 </div>
                             </div>
                         </div>
-                        <% if (isAuthenticated && video.user._id.toString() !== user._id.toString()) { %>
+                        <% if (isAuthenticated && video.uploader._id.toString() !== user._id.toString()) { %>
                             <button onclick="handleSubscribe()" 
                                 class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 font-medium">
                                 Subscribe
@@ -173,41 +173,13 @@
                 </div>
             </div>
 
-            <!-- Sidebar - Related Videos -->
-            <div class="w-full lg:w-96">
-                <div class="lg:sticky lg:top-20">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="font-medium text-gray-900">Related Videos</h2>
-                        <div class="flex gap-2">
-                            <button class="text-sm text-gray-600 hover:text-gray-900">Similar</button>
-                            <button class="text-sm text-gray-600 hover:text-gray-900">Trending</button>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <% relatedVideos.forEach(relatedVideo => { %>
-                            <a href="/videos/watch/<%= relatedVideo._id %>" 
-                                class="flex gap-3 group hover:bg-gray-50 p-2 rounded-lg">
-                                <div class="relative flex-shrink-0 w-40 h-24 bg-gray-100 rounded-lg overflow-hidden">
-                                    <img src="<%= relatedVideo.thumbnail %>" alt="<%= relatedVideo.title %>" 
-                                        class="w-full h-full object-cover">
-                                    <span class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs px-1.5 py-0.5 rounded">
-                                        <%= relatedVideo.formattedDuration %>
-                                    </span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-blue-600">
-                                        <%= relatedVideo.title %>
-                                    </h3>
-                                    <p class="mt-1 text-xs text-gray-600"><%= relatedVideo.user.username %></p>
-                                    <div class="mt-1 flex items-center text-xs text-gray-600">
-                                        <span><%= relatedVideo.formattedViews %> views</span>
-                                        <span class="mx-1">•</span>
-                                        <span><%= relatedVideo.formattedDate %></span>
-                                    </div>
-                                </div>
-                            </a>
-                        <% }); %>
-                    </div>
+            <!-- Related Videos Section -->
+            <div class="lg:col-span-1 space-y-4">
+                <h3 class="text-lg font-semibold mb-4 dark:text-white">Related Videos</h3>
+                <div class="space-y-4">
+                    <% relatedVideos.forEach(function(relatedVideo) { %>
+                        <%- include('../partials/video-card', { video: relatedVideo }) %>
+                    <% }); %>
                 </div>
             </div>
         </div>
@@ -533,7 +505,7 @@ async function deleteComment(commentId) {
 
     // Like/Dislike functions
     function handleLike() {
-        if (!<%= isAuthenticated %>) {
+        if (!<%= typeof isAuthenticated !== 'undefined' ? isAuthenticated : false %>) {
             window.location.href = '/users/login';
             return;
         }
@@ -549,15 +521,10 @@ async function deleteComment(commentId) {
                 const likeCount = document.querySelector('.like-count');
                 const dislikeCount = document.querySelector('.dislike-count');
 
-                if (data.liked) {
-                    likeButton.classList.remove('text-gray-600');
-                    likeButton.classList.add('text-blue-600');
-                    dislikeButton.classList.remove('text-blue-600');
-                    dislikeButton.classList.add('text-gray-600');
-                } else {
-                    likeButton.classList.remove('text-blue-600');
-                    likeButton.classList.add('text-gray-600');
-                }
+                likeButton.classList.toggle('text-blue-600', data.liked);
+                likeButton.classList.toggle('text-gray-600', !data.liked);
+                dislikeButton.classList.remove('text-blue-600');
+                dislikeButton.classList.add('text-gray-600');
 
                 likeCount.textContent = data.likes;
                 dislikeCount.textContent = data.dislikes;
@@ -567,7 +534,7 @@ async function deleteComment(commentId) {
     }
 
     function handleDislike() {
-        if (!<%= isAuthenticated %>) {
+        if (!<%= typeof isAuthenticated !== 'undefined' ? isAuthenticated : false %>) {
             window.location.href = '/users/login';
             return;
         }
@@ -583,15 +550,10 @@ async function deleteComment(commentId) {
                 const likeCount = document.querySelector('.like-count');
                 const dislikeCount = document.querySelector('.dislike-count');
 
-                if (data.disliked) {
-                    dislikeButton.classList.remove('text-gray-600');
-                    dislikeButton.classList.add('text-blue-600');
-                    likeButton.classList.remove('text-blue-600');
-                    likeButton.classList.add('text-gray-600');
-                } else {
-                    dislikeButton.classList.remove('text-blue-600');
-                    dislikeButton.classList.add('text-gray-600');
-                }
+                dislikeButton.classList.toggle('text-blue-600', data.disliked);
+                dislikeButton.classList.toggle('text-gray-600', !data.disliked);
+                likeButton.classList.remove('text-blue-600');
+                likeButton.classList.add('text-gray-600');
 
                 likeCount.textContent = data.likes;
                 dislikeCount.textContent = data.dislikes;
@@ -622,7 +584,7 @@ async function deleteComment(commentId) {
 
     // Playlist menu functionality
     function togglePlaylistMenu() {
-        if (!<%= isAuthenticated %>) {
+        if (!<%= typeof isAuthenticated !== 'undefined' ? isAuthenticated : false %>) {
             window.location.href = '/users/login';
             return;
         }
@@ -658,14 +620,15 @@ async function deleteComment(commentId) {
             },
             body: JSON.stringify({
                 title: document.getElementById('editTitle').value,
-                description: document.getElementById('editDescription').value,
-                tags: document.getElementById('editTags').value.split(',').map(tag => tag.trim())
+                description: document.getElementById('editDescription').value
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 window.location.reload();
+            } else {
+                throw new Error(data.error || 'Failed to update video');
             }
         })
         .catch(error => {
@@ -676,6 +639,10 @@ async function deleteComment(commentId) {
 
     // Handle video deletion
     function deleteVideo() {
+        if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+            return;
+        }
+
         fetch(`/videos/<%= video._id %>/delete`, {
             method: 'POST',
             headers: {
@@ -686,6 +653,8 @@ async function deleteComment(commentId) {
         .then(data => {
             if (data.success) {
                 window.location.href = '/';
+            } else {
+                throw new Error(data.error || 'Failed to delete video');
             }
         })
         .catch(error => {
@@ -746,6 +715,46 @@ async function deleteComment(commentId) {
             alert('Error updating playlist');
         });
     }
+
+    // Initialize hover preview for video thumbnails
+    document.addEventListener('DOMContentLoaded', function() {
+        const videoCards = document.querySelectorAll('.video-card');
+        
+        videoCards.forEach(card => {
+            const thumbnail = card.querySelector('img');
+            const videoPath = card.dataset.videoPath;
+            let videoPreview = null;
+            let timeoutId = null;
+
+            card.addEventListener('mouseenter', function() {
+                timeoutId = setTimeout(() => {
+                    if (!videoPreview) {
+                        videoPreview = document.createElement('video');
+                        videoPreview.src = videoPath;
+                        videoPreview.muted = true;
+                        videoPreview.style.width = '100%';
+                        videoPreview.style.height = '100%';
+                        videoPreview.style.objectFit = 'cover';
+                        videoPreview.style.position = 'absolute';
+                        videoPreview.style.top = '0';
+                        videoPreview.style.left = '0';
+                        thumbnail.parentElement.appendChild(videoPreview);
+                    }
+                    videoPreview.play().catch(() => {});
+                }, 500); // 500ms delay before starting preview
+            });
+
+            card.addEventListener('mouseleave', function() {
+                clearTimeout(timeoutId);
+                if (videoPreview) {
+                    videoPreview.pause();
+                    videoPreview.currentTime = 0;
+                    videoPreview.remove();
+                    videoPreview = null;
+                }
+            });
+        });
+    });
 </script>
 
 <!-- Add mobile navigation styles -->

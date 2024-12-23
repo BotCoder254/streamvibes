@@ -9,7 +9,7 @@ const flash = require('connect-flash');
 const passport = require('passport');
 const path = require('path');
 const fs = require('fs');
-
+const User = require('./models/User');
 const app = express();
 
 // Suppress deprecation warning
@@ -67,30 +67,34 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'KquWbFL6DYB7sw4FxuVXAyZnwbfArT0YpoxF1yNGKZg',
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     store: MongoStore.create({
         mongoUrl: uri,
         collectionName: 'sessions',
         ttl: 24 * 60 * 60, // 1 day
         autoRemove: 'native',
+        touchAfter: 24 * 3600, // time period in seconds
         crypto: {
             secret: process.env.SESSION_SECRET || 'KquWbFL6DYB7sw4FxuVXAyZnwbfArT0YpoxF1yNGKZg'
         }
     }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Set to false for development
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
-    }
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        sameSite: 'lax'
+    },
+    name: 'streamvista.sid'
 }));
 
-// Passport middleware
+// Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Connect flash
 app.use(flash());
 
-// Global variables
+// Global variables middleware
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
@@ -132,10 +136,13 @@ app.use('/users', require('./routes/users'));
 app.use('/videos', require('./routes/videos'));
 app.use('/playlists', require('./routes/playlists'));
 app.use('/dashboard', require('./routes/dashboard'));
+const profileRoutes = require('./routes/profile');
+app.use('/profile', profileRoutes);
 
 // Handle both /feed and /videos/feed
 app.get('/feed', (req, res) => {
     if (!req.isAuthenticated()) {
+        req.flash('error_msg', 'Please log in to view this resource');
         return res.redirect('/users/login');
     }
     res.redirect('/videos/feed');

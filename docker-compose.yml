@@ -5,8 +5,11 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
     container_name: streamvista
     restart: unless-stopped
+    init: true
     ports:
       - "${PORT:-3000}:3000"
     environment:
@@ -21,8 +24,12 @@ services:
       - SMTP_USER=teumteum776@gmail.com
       - SMTP_PASS=lxnqofjkeeivvjqq
     volumes:
-      - ./public/uploads:/app/public/uploads
-      - ./uploads/temp:/app/uploads/temp
+      - ./public/uploads:/app/public/uploads:rw
+      - ./uploads/temp:/app/uploads/temp:rw
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -40,11 +47,20 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "20m"
+        max-file: "5"
+        compress: "true"
     networks:
       - app-network
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
 networks:
   app-network:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

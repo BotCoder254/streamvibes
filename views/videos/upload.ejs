@@ -57,6 +57,18 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="thumbnail">
+                    Thumbnail (Optional)
+                </label>
+                <input type="file" 
+                       id="thumbnail" 
+                       name="thumbnail" 
+                       accept="image/*"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p class="text-sm text-gray-500 mt-1">If no thumbnail is uploaded, one will be generated from the video.</p>
+            </div>
+
             <div class="flex justify-end pt-4">
                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                     <i class="ph-upload-simple mr-2"></i>
@@ -173,9 +185,12 @@ document.querySelector('form').addEventListener('submit', async function(e) {
         progressBar.style.width = '100%';
         progressText.textContent = '100%';
 
-        // Redirect to home page after successful upload
-        window.location.href = response.video.redirectUrl || '/';
-
+        // Redirect to the video page
+        if (response.success && response.video && response.video.redirectUrl) {
+            window.location.href = response.video.redirectUrl;
+        } else {
+            window.location.href = '/';
+        }
     } catch (error) {
         console.error('Upload error:', error);
         alert('Error uploading video: ' + error.message);

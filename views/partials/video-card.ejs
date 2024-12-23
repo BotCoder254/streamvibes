@@ -1,0 +1,75 @@
+<!-- Video Card Template -->
+<div class="video-card relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300" data-video-path="<%= video.videoPath %>">
+    <a href="/videos/watch/<%= video._id %>" class="block relative">
+        <div class="relative aspect-w-16 aspect-h-9">
+            <img src="<%= video.thumbnailPath %>" alt="<%= video.title %>" class="w-full h-full object-cover">
+            <div class="absolute bottom-1 right-1 bg-black bg-opacity-75 text-white text-xs px-1 rounded">
+                <%= video.formattedDuration %>
+            </div>
+            <div class="video-preview absolute inset-0 hidden">
+                <!-- Video preview will be inserted here -->
+            </div>
+        </div>
+        <div class="p-3">
+            <div class="flex items-start space-x-3">
+                <div class="flex-grow">
+                    <h3 class="text-sm font-medium line-clamp-2 mb-1 dark:text-white">
+                        <%= video.title %>
+                    </h3>
+                    <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span><%= video.uploader.username %></span>
+                        <span class="mx-1">•</span>
+                        <span><%= video.formattedViews %> views</span>
+                        <span class="mx-1">•</span>
+                        <span><%= video.formattedDate %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const card = document.currentScript.parentElement;
+    const previewContainer = card.querySelector('.video-preview');
+    const videoPath = card.dataset.videoPath;
+    let videoPreview = null;
+    let timeoutId = null;
+
+    function createVideoPreview() {
+        if (!videoPreview) {
+            videoPreview = document.createElement('video');
+            videoPreview.src = videoPath;
+            videoPreview.muted = true;
+            videoPreview.loop = true;
+            videoPreview.style.width = '100%';
+            videoPreview.style.height = '100%';
+            videoPreview.style.objectFit = 'cover';
+            previewContainer.appendChild(videoPreview);
+        }
+        previewContainer.classList.remove('hidden');
+        videoPreview.play().catch(() => {
+            // If video fails to play, keep showing the thumbnail
+            previewContainer.classList.add('hidden');
+        });
+    }
+
+    function removeVideoPreview() {
+        if (videoPreview) {
+            videoPreview.pause();
+            videoPreview.currentTime = 0;
+            previewContainer.classList.add('hidden');
+        }
+    }
+
+    card.addEventListener('mouseenter', function() {
+        timeoutId = setTimeout(createVideoPreview, 500);
+    });
+
+    card.addEventListener('mouseleave', function() {
+        clearTimeout(timeoutId);
+        removeVideoPreview();
+    });
+});
+</script> 

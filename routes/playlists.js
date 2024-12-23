@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { isAuthenticated } = require('../middleware/auth');
+const { ensureAuthenticated } = require('../middleware/auth');
 const Playlist = require('../models/Playlist');
 const Video = require('../models/Video');
 
 // Get all playlists for the current user
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         const playlists = await Playlist.find({ user: req.user._id })
             .populate({
@@ -31,7 +31,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // Create new playlist
-router.post('/', isAuthenticated, async (req, res) => {
+router.post('/', ensureAuthenticated, async (req, res) => {
     try {
         const { name, description, visibility } = req.body;
 
@@ -97,7 +97,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update playlist
-router.put('/:id', isAuthenticated, async (req, res) => {
+router.put('/:id', ensureAuthenticated, async (req, res) => {
     try {
         const playlist = await Playlist.findOne({
             _id: req.params.id,
@@ -127,7 +127,7 @@ router.put('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Delete playlist
-router.delete('/:id', isAuthenticated, async (req, res) => {
+router.delete('/:id', ensureAuthenticated, async (req, res) => {
     try {
         const playlist = await Playlist.findOne({
             _id: req.params.id,
@@ -151,7 +151,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Add video to playlist
-router.post('/:id/videos/:videoId', isAuthenticated, async (req, res) => {
+router.post('/:id/videos/:videoId', ensureAuthenticated, async (req, res) => {
     try {
         const playlist = await Playlist.findOne({
             _id: req.params.id,
@@ -197,7 +197,7 @@ router.post('/:id/videos/:videoId', isAuthenticated, async (req, res) => {
 });
 
 // Remove video from playlist
-router.delete('/:id/videos/:videoId', isAuthenticated, async (req, res) => {
+router.delete('/:id/videos/:videoId', ensureAuthenticated, async (req, res) => {
     try {
         const playlist = await Playlist.findOne({
             _id: req.params.id,
@@ -227,7 +227,7 @@ router.delete('/:id/videos/:videoId', isAuthenticated, async (req, res) => {
 });
 
 // Reorder videos in playlist
-router.put('/:id/reorder', isAuthenticated, async (req, res) => {
+router.put('/:id/reorder', ensureAuthenticated, async (req, res) => {
     try {
         const playlist = await Playlist.findOne({
             _id: req.params.id,

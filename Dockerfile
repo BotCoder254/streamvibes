@@ -1,17 +1,23 @@
-# Use Node.js LTS version
-FROM node:20-slim
+# Use Node.js LTS version with Alpine for smaller image size
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies including ffmpeg and other required packages
-RUN apt-get update && apt-get install -y \
+# Install system dependencies and clean up in one layer
+RUN apk add --no-cache \
     ffmpeg \
     curl \
     python3 \
     make \
     g++ \
-    && rm -rf /var/lib/apt/lists/*
+    && mkdir -p /app/public/uploads/videos \
+       /app/public/uploads/thumbnails \
+       /app/public/uploads/avatars \
+       /app/uploads/temp \
+    && chmod -R 755 /app/public/uploads \
+    && chmod -R 755 /app/uploads \
+    && addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Set environment variables
 ENV NODE_ENV=production \
@@ -25,36 +31,28 @@ ENV NODE_ENV=production \
     SMTP_USER=teumteum776@gmail.com \
     SMTP_PASS=lxnqofjkeeivvjqq
 
-# Create necessary directories with proper permissions
-RUN mkdir -p /app/public/uploads/videos \
-    /app/public/uploads/thumbnails \
-    /app/public/uploads/avatars \
-    /app/uploads/temp \
-    && chmod -R 755 /app/public/uploads \
-    && chmod -R 755 /app/uploads
-
 # Copy package files
-COPY package*.json ./
+COPY --chown=appuser:appgroup package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install production dependencies only
+RUN npm ci --only=production && npm cache clean --force
 
 # Copy project files
-COPY . .
+COPY --chown=appuser:appgroup . .
 
-# Set proper permissions for uploaded files
-RUN chown -R node:node /app/public/uploads \
-    && chown -R node:node /app/uploads
+# Set proper permissions
+RUN chown -R appuser:appgroup /app/public/uploads \
+    && chown -R appuser:appgroup /app/uploads
 
 # Switch to non-root user
-USER node
+USER appuser
 
 # Expose port
 EXPOSE $PORT
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:$PORT/ || exit 1
+# Health check with better parameters
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:$PORT/health || exit 1
 
-# Start the application
+# Start the application with reduced privileges
 CMD ["npm", "start"] 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Video = require('../models/Video');
-const { isAuthenticated } = require('../middleware/auth');
+const { ensureAuthenticated } = require('../middleware/auth');
 const moment = require('moment');
 
 // Helper function to format watch time
@@ -27,7 +27,7 @@ function formatDuration(seconds) {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         // Get date range for analytics
         const endDate = new Date();
@@ -136,11 +136,13 @@ router.get('/', isAuthenticated, async (req, res) => {
             watchTimeData,
             topVideos,
             formatDuration,
-            formatWatchTime
+            formatWatchTime,
+            path: '/dashboard'
         });
     } catch (error) {
         console.error('Dashboard Error:', error);
-        res.status(500).send('Error loading dashboard');
+        req.flash('error_msg', 'Error loading dashboard');
+        res.redirect('/');
     }
 });
 
